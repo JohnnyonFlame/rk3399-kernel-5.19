@@ -80,8 +80,9 @@
 		rumble-boost-strong = <0x0000>;
 
 		joypad-name = "Microsoft X-Box 360 pad";
-		joypad-product = <0x045e>;
-		joypad-revision = <0x028e>;
+		joypad-vendor = <0x045e>;
+		joypad-product = <0x028e>;
+		joypad-revision = <0x0000>;
 
 		status = "okay";
 
