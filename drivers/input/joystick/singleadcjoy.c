@@ -30,6 +30,30 @@
 #define DRV_NAME "retrogame_joypad"
 
 /*----------------------------------------------------------------------------*/
+
+/* buttons shared with xbox and xbox360 */
+static const signed short xpad_btn[] = {
+	BTN_A, BTN_B, BTN_X, BTN_Y,			           /* "analog" buttons */
+	BTN_START, BTN_SELECT, BTN_THUMBL, BTN_THUMBR, /* start/back/sticks */
+	BTN_C, BTN_Z,		                           /* "analog" buttons */
+	BTN_TRIGGER_HAPPY1, BTN_TRIGGER_HAPPY2,		   /* d-pad left, right */
+	BTN_TRIGGER_HAPPY3, BTN_TRIGGER_HAPPY4,		   /* d-pad up, down */
+	BTN_TL2, BTN_TR2,		                       /* triggers left/right */
+	BTN_TL, BTN_TR,		                           /* Button LB/RB */
+	BTN_MODE,		                               /* The big X button */
+	-1
+};
+
+/* xbox axes */
+static const signed short xpad_abs[] = {
+	ABS_X, ABS_Y,		  /* left stick */
+	ABS_RX, ABS_RY,		  /* right stick */
+	ABS_HAT0X, ABS_HAT0Y, /* d-pad axes */
+	ABS_Z, ABS_RZ,		  /* triggers left/right */
+	-1
+};
+
+/*----------------------------------------------------------------------------*/
 #define	ADC_MAX_VOLTAGE		1800
 #define	ADC_DATA_TUNING(x, p)	((x * p) / 100)
 #define	ADC_TUNING_DEFAULT	180
@@ -1169,6 +1193,13 @@ static int joypad_input_setup(struct device *dev, struct joypad *joypad)
 
 	/* IIO ADC key setup (0 mv ~ 1800 mv) * adc->scale */
 	__set_bit(EV_ABS, input->evbit);
+
+	// Set dummy values in order to report all possible axes
+	for(nbtn = 0; xpad_abs[nbtn] != -1; nbtn++) {
+		input_set_abs_params(input, xpad_abs[nbtn], 0, 255, 0, 0);
+	}
+
+	// Set mapped ones on dt
 	for(nbtn = 0; nbtn < joypad->amux_count; nbtn++) {
 		struct bt_adc *adc = &joypad->adcs[nbtn];
 		input_set_abs_params(input, adc->report_type,
@@ -1200,7 +1231,7 @@ static int joypad_input_setup(struct device *dev, struct joypad *joypad)
 		return error;
 	}
 	
-
+#if 0
 	/* GPIO key setup */
 	__set_bit(EV_KEY, input->evbit);
 	for(nbtn = 0; nbtn < joypad->bt_gpio_count; nbtn++) {
@@ -1211,6 +1242,10 @@ static int joypad_input_setup(struct device *dev, struct joypad *joypad)
 
 	if (joypad->auto_repeat)
 		__set_bit(EV_REP, input->evbit);
+#endif
+	for (nbtn = 0; xpad_btn[nbtn] != -1; nbtn++) {
+		input_set_capability(input, EV_KEY, xpad_btn[nbtn]);
+	}
 
 	joypad->dev = dev;
 
